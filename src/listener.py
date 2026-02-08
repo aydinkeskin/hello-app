@@ -1,5 +1,6 @@
 """Subscribe to the commands ntfy topic via Server-Sent Events."""
 
+import json
 import logging
 import threading
 
@@ -73,7 +74,17 @@ def _handle_event(event: sseclient.Event) -> None:
         logger.debug("Ignoring empty event")
         return
 
-    logger.info("Received command: %s", event.data)
+    try:
+        payload = json.loads(event.data)
+        message = payload.get("message", "")
+    except json.JSONDecodeError:
+        message = event.data
 
-    greeting = process_greeting(event.data)
+    if not message or message.strip() == "":
+        logger.debug("Ignoring event with no message content")
+        return
+
+    logger.info("Received command: %s", message)
+
+    greeting = process_greeting(message)
     send_notification(greeting)

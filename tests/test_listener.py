@@ -6,8 +6,23 @@ from src.listener import _handle_event
 
 
 @patch("src.listener.send_notification")
+@patch("src.listener.process_greeting", return_value="Hello Aydin!")
+def test_handle_event_json_message(mock_process, mock_notify):
+    """ntfy sends JSON blobs — we extract the 'message' field."""
+    event = MagicMock()
+    event.event = "message"
+    event.data = '{"id":"abc","event":"message","topic":"t","message":"Aydin"}'
+
+    _handle_event(event)
+
+    mock_process.assert_called_once_with("Aydin")
+    mock_notify.assert_called_once_with("Hello Aydin!")
+
+
+@patch("src.listener.send_notification")
 @patch("src.listener.process_greeting", return_value="Hello World!")
-def test_handle_event_valid(mock_process, mock_notify):
+def test_handle_event_plain_text_fallback(mock_process, mock_notify):
+    """Non-JSON data is used as-is."""
     event = MagicMock()
     event.event = "message"
     event.data = "World"
@@ -50,6 +65,19 @@ def test_handle_event_none_data(mock_process, mock_notify):
     event = MagicMock()
     event.event = "message"
     event.data = None
+
+    _handle_event(event)
+
+    mock_process.assert_not_called()
+    mock_notify.assert_not_called()
+
+
+@patch("src.listener.send_notification")
+@patch("src.listener.process_greeting")
+def test_handle_event_json_empty_message(mock_process, mock_notify):
+    event = MagicMock()
+    event.event = "message"
+    event.data = '{"id":"abc","event":"message","message":""}'
 
     _handle_event(event)
 
