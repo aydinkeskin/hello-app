@@ -56,7 +56,7 @@ cp .env.example .env  # then edit with your topic names
 python -m src.main
 ```
 
-The service connects to ntfy.sh via SSE, listens for incoming name strings, and pushes back greeting notifications. Stop it with `Ctrl+C`.
+The service connects to ntfy.sh via SSE, parses incoming JSON events, extracts the message field, and pushes back greeting notifications. It automatically reconnects with exponential backoff if the connection drops. Stop it with `Ctrl+C`.
 
 ### macOS Auto-Start (launchd)
 
@@ -104,7 +104,7 @@ ruff format src/ tests/
 hello-app/
 ├── src/
 │   ├── main.py         # Entry point — starts the listener
-│   ├── listener.py     # Subscribes to commands topic via SSE
+│   ├── listener.py     # Subscribes to commands topic via SSE, parses JSON events
 │   ├── processor.py    # Business logic (greeting generation)
 │   ├── notifier.py     # Publishes results to ntfy
 │   └── config.py       # Loads and validates env vars
@@ -117,6 +117,7 @@ hello-app/
 │   └── uninstall-service.sh
 ├── .env.example
 ├── requirements.txt
+├── README.md
 └── CLAUDE.md
 ```
 

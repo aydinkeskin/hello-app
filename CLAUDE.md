@@ -5,7 +5,7 @@
 - **Name:** Hello App
 - **Description:** A lightweight Python service that runs on a Mac Mini and listens for commands from an iPhone via ntfy.sh pub/sub. When the user sends a name string from their phone, the service receives it, processes it into a greeting ("Hello {name}!"), and pushes the result back to the phone as a notification. No inbound connections — all communication is outbound HTTPS only.
 - **Stage:** MVP
-- **Repository:** [TBD]
+- **Repository:** https://github.com/aydinkeskin/hello-app
 
 ## Tech Stack
 
@@ -50,6 +50,7 @@ iPhone (ntfy app shows notification)
 - **Folder Structure:**
 ```
 hello-app/
+├── README.md           # Project documentation
 ├── CLAUDE.md           # This file — project context
 ├── .env                # Topic names, config (gitignored)
 ├── .env.example        # Template for .env
@@ -85,7 +86,8 @@ hello-app/
 - **User-facing behavior:** Invisible — runs in background on Mac Mini.
 - **Technical notes:**
   - Connect to `https://ntfy.sh/{COMMANDS_TOPIC}/sse`
-  - Parse incoming SSE events, extract the message body
+  - ntfy sends JSON blobs per event — parse JSON and extract the `message` field
+  - Filter by SSE event type: only process `message` events, ignore `open`/`keepalive`
   - On connection drop: auto-reconnect with exponential backoff (1s, 2s, 4s, max 60s)
   - Log all received commands with timestamp
   - Ignore empty or malformed messages gracefully
@@ -106,7 +108,7 @@ hello-app/
 - **User-facing behavior:** iPhone shows a notification with title "Hello App 👋" and the greeting as body text.
 - **Technical notes:**
   - POST to `https://ntfy.sh/{RESULTS_TOPIC}`
-  - Headers: `Title: Hello App 👋`, `Priority: default`
+  - Headers: `Title: Hello App 👋` (UTF-8 encoded through latin-1 for HTTP header compatibility), `Priority: default`
   - Body: the greeting string
   - Timeout: 10 seconds
   - On failure: log error, do not retry (fire and forget for MVP)
@@ -217,7 +219,7 @@ ruff format src/ tests/
 
 ## Known Issues / Tech Debt
 
-- [ ] SSE reconnection not yet implemented (first build)
+- [x] SSE reconnection with exponential backoff (implemented)
 - [ ] No integration tests (only unit tests for MVP)
 - [ ] No message deduplication if ntfy replays on reconnect
 
