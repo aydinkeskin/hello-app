@@ -19,7 +19,7 @@ def send_notification(greeting: str) -> bool:
     url = f"{NTFY_BASE_URL.rstrip('/')}/{RESULTS_TOPIC}"
 
     headers: dict[str, str] = {
-        "Title": "Hello App \ud83d\udc4b",
+        "Title": "Hello App \U0001f44b".encode("utf-8").decode("latin-1"),
         "Priority": "default",
     }
     if NTFY_TOKEN:

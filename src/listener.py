@@ -65,6 +65,10 @@ def _connect_and_process(shutdown_event: "threading.Event") -> None:
 
 def _handle_event(event: sseclient.Event) -> None:
     """Process a single SSE event."""
+    if event.event != "message":
+        logger.debug("Ignoring non-message event: %s", event.event)
+        return
+
     if not event.data or event.data.strip() == "":
         logger.debug("Ignoring empty event")
         return
